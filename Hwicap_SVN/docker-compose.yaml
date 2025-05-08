@@ -1,0 +1,59 @@
+services:
+  # Jenkins 서비스
+  jenkins:
+    build:
+      context: ../Hwicap_Jenkins         # Jenkins Dockerfile 위치
+      dockerfile: Dockerfile             # Dockerfile 이름이 "Dockerfile"이면 생략 가능
+    container_name: jenkins-server
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /mnt/d/jenkins_home:/var/jenkins_home  # Jenkins 데이터 영속화
+      - /mnt/d/Local_SVN:/svn-repo      # 로컬 SVN 경로 마운트
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker 소켓 공유
+    restart: on-failure
+    networks:
+      - jenkins_network
+
+  # 백엔드 (Maven 프로젝트)
+  hwicap_svn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+      - "8443:8443" # SSL HTTPS 접근
+    environment:
+      DB_URL: jdbc:mysql://database-1.c1ge0ckaqe04.ap-northeast-2.rds.amazonaws.com:3306/hwicap  # MySQL 서비스의 'mysql' 컨테이너 이름으로 연결
+      DB_USERNAME: admin
+      DB_PASSWORD: 1234 # Git에 배포해야하므로 보안상 비밀번호는 없는 비밀번호로 설정
+      DB_DRIVER: com.mysql.cj.jdbc.Driver
+    volumes:
+      - /home/ubuntu/app/config:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config
+      - /home/ubuntu/myenv/img:/app/resources/img
+      - /home/ubuntu/ssl/keystore.jks:/usr/local/tomcat/ssl/keystore.jks
+      - /home/ubuntu/conf/server.xml:/usr/local/tomcat/conf/server.xml
+    networks:
+      - jenkins_network
+
+  # Node API (Node.js 프로젝트)
+  hwicap_node_api:
+    build:
+      context: ./Hwicap_Node_API
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - jenkins_network
+    env_file:
+      - ./Hwicap_Node_API/.env
+
+# 공유 볼륨 정의 (Jenkins 데이터 영속화)
+volumes:
+  jenkins_home:   # Jenkins 데이터 저장을 위한 볼륨
+
+# 네트워크 정의 (서비스 간 연결을 위한 네트워크)
+networks:
+  jenkins_network:
+    driver: bridge

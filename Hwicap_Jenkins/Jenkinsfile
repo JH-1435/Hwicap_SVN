@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    environment {
+        WORKSPACE = "/mnt/d/workspace_2023/Hwicap_SVN"
+    }
+
+    stages {
+        stage('SVN Update') {
+            steps {
+                script {
+                    // SVN 코드 업데이트
+                    echo 'Updating SVN...'
+                    sh 'svn update /mnt/d/workspace_2023/Hwicap_SVN'
+                }
+            }
+        }
+
+        stage('Copy Docker Compose File') {
+            steps {
+                script {
+                    // 로컬 시스템에서 Jenkins 서버로 docker-compose.yaml 파일 복사
+                    echo 'Copying docker-compose.yaml...'
+                    sh 'cp /mnt/d/workspace_2023/Hwicap_SVN/docker-compose.yaml /var/jenkins_home/workspace/Hwicap_SVN_Project/docker-compose.yaml'
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    // Docker Compose를 사용하여 Docker 이미지 빌드
+                    echo 'Building Docker images with docker-compose...'
+                    sh 'docker-compose -f /var/jenkins_home/workspace/Hwicap_SVN_Project/docker-compose.yaml build hwicap_svn hwicap_node_api mysql'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+            // 필요시 추가적인 클린업 작업을 여기에 추가 가능
+        }
+    }
+}
