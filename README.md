@@ -1,6 +1,7 @@
 # 휘캡(Hwicap) - 프로젝트 개편 VER
 ## 휘캡(Hwicap) 프로젝트는 키캡 온라인 쇼핑몰 콘셉트의 웹 사이트 입니다.
 - 기술 스택 학습 목적의 프로젝트로 기술 스택 복기 및 실력향상 초점에 맞추어 제작하였습니다.
+- Linux, Docker, Jenkins CI/CD, Kubernetes, Ansible, AWS 의 배포관련 기술을 습득하였습니다.
 <br><br/>
 ### 개발환경
 - Back-End: Java 8, Spring Framework, Node.js (Express), REST API, Tomcat 8.5, Mybatis
